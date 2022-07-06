@@ -38,8 +38,10 @@ const createNode = (row, column) => {
   return {
     row,
     column,
+    distance: Infinity,
     isStart: row === START_NODE_ROW && column === START_NODE_COLUMN,
     isEnd: row === END_NODE_ROW && column === END_NODE_COLUMN,
+    isVisited: false,
   };
 };
 
