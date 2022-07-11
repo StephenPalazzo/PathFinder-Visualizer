@@ -7,8 +7,25 @@
 
 .node-start {
   background-color: green;
+  outline: 1px solid white;
 }
 
 .node-end {
   background-color: red;
+  outline: 1px solid white;
+}
+
+.node-wall {
+  background-color: black;
+  outline: 1px solid white;
+}
+
+.node-visited {
+  background-color: aqua;
+  outline: 1px solid white;
+}
+
+.node-path {
+  background-color: yellow;
+  outline: none;
 }

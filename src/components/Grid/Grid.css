@@ -1,7 +1,12 @@
+.grid-controls {
+  display: flex;
+  justify-content: space-between;
+  margin: 30px auto 0px;
+  width: 50%;
+}
 .grid {
-  margin: auto;
+  margin: 30px auto 0px;
   width: 80%;
-  padding: 60px 0 0 0;
 }
 
 .gridColumn {
