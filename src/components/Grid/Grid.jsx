@@ -3,13 +3,16 @@ import Node from './Node/Node';
 import { Dijkstra, getShortestPath } from '../../Algorithms/Dijkstra';
 import './Grid.css';
 
-const START_NODE_ROW = 10;
-const START_NODE_COLUMN = 15;
-const END_NODE_ROW = 10;
-const END_NODE_COLUMN = 45;
+let START_NODE_ROW = 10;
+let START_NODE_COLUMN = 15;
+let END_NODE_ROW = 10;
+let END_NODE_COLUMN = 45;
 
 export default function Grid() {
-  const [grid, setGrid] = useState(createGrid);
+  //const [startNode, setStartNode] = useState([10, 15]);
+  //const [endNode, setEndNode] = useState([10, 45]);
+  const [grid, setGrid] = useState(createGrid());
+  const [mouseIsPressed, setMouseIsPressed] = useState(false);
 
   return (
     <>
@@ -25,9 +28,9 @@ export default function Grid() {
         >
           SEARCH
         </button>
-        <button onClick={() => setGrid(createGrid)}>CLEAR</button>
+        <button onClick={() => window.location.reload(false)}>CLEAR</button>
       </div>
-      <div className="grid">
+      <div className="grid-layout">
         {grid.map((row, rowIdx) => {
           return (
             <div className="gridColumn" key={rowIdx}>
@@ -42,6 +45,10 @@ export default function Grid() {
                     isStart={isStart}
                     isWall={isWall}
                     isVisited={isVisited}
+                    mouseIsPressed={mouseIsPressed}
+                    onMouseDown={(row, col) => handleMouseDown(row, col)}
+                    onMouseEnter={(row, col) => handleMouseEnter(row, col)}
+                    onMouseUp={() => handleMouseUp()}
                   ></Node>
                 );
               })}
@@ -51,9 +58,34 @@ export default function Grid() {
       </div>
     </>
   );
+
+  function updateGridWithWall(row, column) {
+    const node = grid[row][column];
+
+    const updateNode = {
+      ...node,
+      isWall: !node.isWall,
+    };
+    grid[row][column] = updateNode;
+    return grid;
+  }
+
+  function handleMouseDown(row, col) {
+    setGrid(updateGridWithWall(row, col));
+    setMouseIsPressed(true);
+  }
+
+  function handleMouseEnter(row, col) {
+    if (!mouseIsPressed) return;
+    setGrid(updateGridWithWall(row, col));
+  }
+
+  function handleMouseUp() {
+    setMouseIsPressed(false);
+  }
 }
 
-const createNode = (row, column) => {
+function createNode(row, column) {
   return {
     row,
     column,
@@ -64,9 +96,9 @@ const createNode = (row, column) => {
     isVisited: false,
     previousNode: null,
   };
-};
+}
 
-const createGrid = () => {
+function createGrid() {
   const grid = [];
 
   for (let row = 0; row < 25; row++) {
@@ -78,18 +110,17 @@ const createGrid = () => {
   }
 
   return grid;
-};
+}
 
-const updateGridWithWall = (grid, row, column) => {
-  const node = grid[row][column];
+function updateStartNode(grid, row, column) {
+  const startNode = grid[row][column];
 
-  const updateNode = {
-    ...node,
-    isStart: !node.isWall,
+  const updateStartNode = {
+    ...startNode,
   };
-  grid[row][column] = updateNode;
+  grid[row][column] = updateStartNode;
   return grid;
-};
+}
 
 function visualizeDijkstra(grid, startNode, endNode) {
   const visitedNodes = Dijkstra(grid, startNode, endNode);
@@ -107,7 +138,7 @@ function animatingDijkstra(visitedNodes, shortestPathOfNodes) {
       if (i === visitedNodes.length - 2) {
         animatingPath(shortestPathOfNodes);
       }
-    }, 15 * i);
+    }, 5 * i);
   }
 }
 

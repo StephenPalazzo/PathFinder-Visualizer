@@ -17,7 +17,7 @@ export function Dijkstra(grid, startNode, endNode) {
     unvisitedNodes.sort((nodeA, nodeB) => nodeA.distance - nodeB.distance);
 
     const closestNode = unvisitedNodes.shift();
-    if (closestNode.distance === Infinity) return 'Failed/Blocked';
+    if (closestNode.distance === Infinity) return 'Failed/NoPath';
 
     closestNode.isVisited = true;
     visitedNodes.push(closestNode);
@@ -37,7 +37,9 @@ function updateNeighborNodes(node, grid) {
   if (column > 0) neighborNodes.push(grid[row][column - 1]);
   if (column < grid[0].length - 1) neighborNodes.push(grid[row][column + 1]);
 
-  neighborNodes = neighborNodes.filter((nodes) => !nodes.isVisited);
+  neighborNodes = neighborNodes.filter(
+    (nodes) => !nodes.isVisited && !nodes.isWall
+  );
 
   for (const neighborNode of neighborNodes) {
     neighborNode.distance = node.distance + 1;

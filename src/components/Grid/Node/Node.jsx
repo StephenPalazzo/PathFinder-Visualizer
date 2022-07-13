@@ -8,6 +8,9 @@ export default function Node({
   isEnd,
   isWall,
   isVisited,
+  onMouseDown,
+  onMouseEnter,
+  onMouseUp,
 }) {
   const nodeType = isStart
     ? 'node-start'
@@ -19,5 +22,13 @@ export default function Node({
     ? 'node-visited'
     : '';
 
-  return <div id={`${row}-${column}`} className={`node ${nodeType}`}></div>;
+  return (
+    <div
+      id={`${row}-${column}`}
+      className={`node ${nodeType}`}
+      onMouseDown={() => onMouseDown(row, column)}
+      onMouseEnter={() => onMouseEnter(row, column)}
+      onMouseUp={() => onMouseUp()}
+    ></div>
+  );
 }
