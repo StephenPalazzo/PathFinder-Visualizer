@@ -28,7 +28,7 @@ export default function Node({
       className={`node ${nodeType}`}
       onMouseDown={() => onMouseDown(row, column)}
       onMouseEnter={() => onMouseEnter(row, column)}
-      onMouseUp={() => onMouseUp()}
+      onMouseUp={() => onMouseUp(row, column)}
     ></div>
   );
 }

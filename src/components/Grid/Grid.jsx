@@ -3,16 +3,15 @@ import Node from './Node/Node';
 import { Dijkstra, getShortestPath } from '../../Algorithms/Dijkstra';
 import './Grid.css';
 
-let START_NODE_ROW = 10;
-let START_NODE_COLUMN = 15;
-let END_NODE_ROW = 10;
-let END_NODE_COLUMN = 45;
-
 export default function Grid() {
-  //const [startNode, setStartNode] = useState([10, 15]);
-  //const [endNode, setEndNode] = useState([10, 45]);
+  const [startNodeCords, setStartNodeCords] = useState({ row: 10, col: 15 });
+  const [endNodeCords, setEndNodeCords] = useState({ row: 10, col: 45 });
   const [grid, setGrid] = useState(createGrid());
-  const [mouseIsPressed, setMouseIsPressed] = useState(false);
+  const [interactionType, setInteractionType] = useState({
+    wallNode: false,
+    startNode: false,
+    endNode: false,
+  });
 
   return (
     <>
@@ -21,8 +20,8 @@ export default function Grid() {
           onClick={() =>
             visualizeDijkstra(
               grid,
-              grid[START_NODE_ROW][START_NODE_COLUMN],
-              grid[END_NODE_ROW][END_NODE_COLUMN]
+              grid[startNodeCords.row][startNodeCords.col],
+              grid[endNodeCords.row][endNodeCords.col]
             )
           }
         >
@@ -35,7 +34,15 @@ export default function Grid() {
           return (
             <div className="gridColumn" key={rowIdx}>
               {row.map((node, columnIdx) => {
-                const { row, column, isEnd, isStart, isWall, isVisited } = node;
+                const {
+                  row,
+                  column,
+                  isEnd,
+                  isStart,
+                  isWall,
+                  isVisited,
+                  draggable,
+                } = node;
                 return (
                   <Node
                     key={columnIdx}
@@ -45,10 +52,10 @@ export default function Grid() {
                     isStart={isStart}
                     isWall={isWall}
                     isVisited={isVisited}
-                    mouseIsPressed={mouseIsPressed}
                     onMouseDown={(row, col) => handleMouseDown(row, col)}
                     onMouseEnter={(row, col) => handleMouseEnter(row, col)}
-                    onMouseUp={() => handleMouseUp()}
+                    onMouseUp={(row, col) => handleMouseUp(row, col)}
+                    draggable={draggable}
                   ></Node>
                 );
               })}
@@ -59,7 +66,7 @@ export default function Grid() {
     </>
   );
 
-  function updateGridWithWall(row, column) {
+  function updateGridWithWallNode(row, column) {
     const node = grid[row][column];
 
     const updateNode = {
@@ -70,56 +77,110 @@ export default function Grid() {
     return grid;
   }
 
+  function updateGridWithStartNode(row, col) {
+    const oldStartNode = grid[startNodeCords.row][startNodeCords.col];
+    const updateOldStartNode = {
+      ...oldStartNode,
+      isStart: false,
+    };
+
+    grid[oldStartNode.row][oldStartNode.column] = updateOldStartNode;
+
+    const newStartNode = grid[row][col];
+
+    const updateNewStartNode = {
+      ...newStartNode,
+      isStart: true,
+    };
+
+    grid[row][col] = updateNewStartNode;
+
+    setStartNodeCords({
+      row: row,
+      col: col,
+    });
+    return grid;
+  }
+
+  function updateGridWithEndNode(row, col) {
+    const oldEndNode = grid[endNodeCords.row][endNodeCords.col];
+    const updateOldEndNode = {
+      ...oldEndNode,
+      isEnd: false,
+    };
+
+    grid[oldEndNode.row][oldEndNode.column] = updateOldEndNode;
+
+    const newEndNode = grid[row][col];
+
+    const updateNewEndNode = {
+      ...newEndNode,
+      isEnd: true,
+    };
+
+    grid[row][col] = updateNewEndNode;
+
+    setEndNodeCords({
+      row: row,
+      col: col,
+    });
+    return grid;
+  }
+
   function handleMouseDown(row, col) {
-    setGrid(updateGridWithWall(row, col));
-    setMouseIsPressed(true);
+    if (grid[row][col].isStart) {
+      setInteractionType({ ...interactionType, startNode: true });
+    } else if (grid[row][col].isEnd) {
+      setInteractionType({ ...interactionType, endNode: true });
+    } else {
+      setGrid(updateGridWithWallNode(row, col));
+      setInteractionType({ ...interactionType, wallNode: true });
+    }
   }
 
   function handleMouseEnter(row, col) {
-    if (!mouseIsPressed) return;
-    setGrid(updateGridWithWall(row, col));
+    if (!interactionType.wallNode) return;
+    setGrid(updateGridWithWallNode(row, col));
   }
 
-  function handleMouseUp() {
-    setMouseIsPressed(false);
-  }
-}
-
-function createNode(row, column) {
-  return {
-    row,
-    column,
-    distance: Infinity,
-    isStart: row === START_NODE_ROW && column === START_NODE_COLUMN,
-    isEnd: row === END_NODE_ROW && column === END_NODE_COLUMN,
-    isWall: false,
-    isVisited: false,
-    previousNode: null,
-  };
-}
-
-function createGrid() {
-  const grid = [];
-
-  for (let row = 0; row < 25; row++) {
-    const newRow = [];
-    for (let column = 0; column < 60; column++) {
-      newRow.push(createNode(row, column));
+  function handleMouseUp(row, col) {
+    if (interactionType.startNode) {
+      setGrid(updateGridWithStartNode(row, col));
+      setInteractionType({ ...interactionType, startNode: false });
+    } else if (interactionType.endNode) {
+      setGrid(updateGridWithEndNode(row, col));
+      setInteractionType({ ...interactionType, endNode: false });
+    } else {
+      setInteractionType({ ...interactionType, wallNode: false });
     }
-    grid.push(newRow);
   }
 
-  return grid;
-}
+  function createNode(row, column) {
+    return {
+      row,
+      column,
+      distance: Infinity,
+      isStart: row === startNodeCords.row && column === startNodeCords.col,
+      isEnd: row === endNodeCords.row && column === endNodeCords.col,
+      isWall: false,
+      isVisited: false,
+      previousNode: null,
+    };
+  }
 
-function updateStartNode(grid, row, column) {
-  const startNode = grid[row][column];
+  function createGrid() {
+    const grid = [];
 
-  const updateStartNode = {
-    ...startNode,
-  };
-  grid[row][column] = updateStartNode;
-  return grid;
+    for (let row = 0; row < 25; row++) {
+      const newRow = [];
+      for (let column = 0; column < 60; column++) {
+        newRow.push(createNode(row, column));
+      }
+      grid.push(newRow);
+    }
+
+    return grid;
+  }
 }
 
 function visualizeDijkstra(grid, startNode, endNode) {
